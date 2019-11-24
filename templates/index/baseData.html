@@ -11,6 +11,12 @@
     <link rel="stylesheet" href="/static/layuiadmin/style/admin.css" media="all">
 </head>
 <body>
+<style>
+    /*块头*/
+    .layui-card-header{
+        font-size:18px;
+    }
+</style>
 
 <div class="layui-fluid">
     <div class="layui-row layui-col-space15">
@@ -21,9 +27,9 @@
                     查询条件
                     <!--<span class="layui-badge layui-bg-blue layuiadmin-badge"></span>-->
                 </div>
-                <div class="layui-card-body " style="padding: 15px;">
-                    <form class="layui-form" action="" lay-filter="component-form-group">
-                        <div class="layui-form-item" id="area-picker">
+                <div class="layui-card-body  " style="padding: 15px;">
+                    <form class="layui-form layui-row" action="" lay-filter="component-form-group">
+                        <div class="layui-form-item layui-col-xs6 layui-col-sm6 layui-col-md4" style="clear:none" >
                             <div class="layui-inline">
                                 <label class="layui-form-label">年份</label>
                                 <div class="layui-input-inline">
@@ -31,6 +37,9 @@
                                            placeholder="yyyy" autocomplete="off" class="layui-input">
                                 </div>
                             </div>
+                        </div>
+
+                        <div class="layui-form-item layui-col-xs6 layui-col-sm6 layui-col-md4" id="area-picker" style="clear:none" >
                             <label class="layui-form-label">省份</label>
                             <div class="layui-input-inline">
                                 <select name="province" class="province-selector" data-value="北京市"
@@ -40,7 +49,7 @@
                             </div>
                         </div>
 
-                        <div class="layui-form-item ">
+                        <div class="layui-form-item layui-col-xs6 layui-col-sm6 layui-col-md4" style="clear:none" >
                             <div class="layui-input-block">
                                 <div class="layui-footer" style="left: 0;">
                                     <button class="layui-btn" lay-submit="" lay-filter="component-form-demo1">查询
@@ -48,20 +57,18 @@
                                 </div>
                             </div>
                         </div>
-
-
                     </form>
                 </div>
             </div>
         </div>
         <div class="layui-col-sm6 layui-col-md4">
             <div class="layui-card">
-                <div class="layui-card-header">
+                <div class="layui-card-header" >
                     人口总量
                     <span class="layui-badge layui-bg-orange layuiadmin-badge">万人</span>
                 </div>
                 <div class="layui-card-body layuiadmin-card-list">
-                    <p class="layuiadmin-big-font">66,666</p>
+                    <p class="layuiadmin-big-font" id="popNum">66,666</p>
                     <i class="layui-inline layui-icon layui-icon-user"></i>
                 </div>
             </div>
@@ -73,7 +80,7 @@
                     <span class="layui-badge layui-bg-green layuiadmin-badge">万亿人民币</span>
                 </div>
                 <div class="layui-card-body layuiadmin-card-list">
-                    <p class="layuiadmin-big-font">999,666</p>
+                    <p class="layuiadmin-big-font" id="gdpNum">999,666</p>
                     <i class="layui-inline layui-icon layui-icon-dollar"></i>
                 </div>
             </div>
@@ -85,10 +92,8 @@
                     <span class="layui-badge layui-bg-blue layuiadmin-badge">PJ</span>
                 </div>
                 <div class="layui-card-body layuiadmin-card-list">
-                    <p class="layuiadmin-big-font">9,999,666</p>
-                    <i
-                                class="layui-inline layui-icon layui-icon-flag"></i>
-
+                    <p class="layuiadmin-big-font" id="energyNum">9,999,666</p>
+                    <i class="layui-inline layui-icon layui-icon-flag"></i>
                 </div>
             </div>
         </div>
@@ -336,46 +341,90 @@
 </div>
 
 <script src="/static/layuiadmin/layui/layui.js"></script>
+<script src="/static/modules/jQuery/jquery.min.js"></script>
 <script>
     layui.config({
         base: '/static/layuiadmin/' //静态资源所在路径
     }).extend({
         index: 'lib/index' //主入口模块
-    }).use(['index', 'sample', 'form', 'laydate', 'layarea'], function () {
-        var $ = layui.$
-            , laydate = layui.laydate
+    }).use(['index', 'sample', 'form', 'laydate', 'layarea','jquery'], function () {
+        var
+             laydate = layui.laydate
             , admin = layui.admin
             , element = layui.element
             , layer = layui.layer
             , layarea = layui.layarea
             , form = layui.form;
-        /*省份选择*/
+        var curYear= '2018';  //当前年份
+        var curProvince= '北京市';//当前月份
+
+        /* 省份选择组件初始化 */
         layarea.render({
             elem: '#area-picker',
             change: function (res) {
-                //选择结果
-                console.log(res)
-                $("#province").val(res.province);
-                $("#provinceShow").html(res.province);
+                curProvince=res.province;
+                initData(curProvince,curYear)
             }
         });
-        /*执行一个laydate实例*/
+        /* 年份选择  laydate实例 */
         form.render(null, 'component-form-group');
         laydate.render({
             elem: '#date-picker', //指定元素
             type: 'year',
-            value: "2018",
+            value: curYear,
             position: "fixed",
-            theme: '#18accc'
+            showBottom: false,
+            // theme: '#18accc',
+            change: function(value, date, endDate){
+                curYear=value;
+                if(initData(curProvince,curYear)){
+                    $("#date-picker").val(curYear);
+                }
+            }
         });
-        /* 监听提交 */
+
+        /* 监听查询按钮 */
         form.on('submit(component-form-demo1)', function (data) {
-            parent.layer.alert(JSON.stringify(data.field), {
-                title: '最终的提交信息'
-            })
+            initData(curProvince,curYear)
             return false;
         });
+
+
+        /*从后台获取数据：gdp、人口、能源消费*/
+        $.ajax({
+            url:'/getIndexDate',
+            type:"GET",
+            async:false,
+            success:function(data){
+                pageData= $.parseJSON(data);
+            }
+        })
+
+        /*根据年份和省份数据来修改 gdp 、人口、能源消费数据
+        *   province：省份
+        *   year:年份
+        * */
+        var initData = function(province,year){
+            if( $.isEmptyObject(province)||$.isEmptyObject(year)){
+                layer.alert("查询条件有误"+province+" "+year+"年");
+                return false;
+            }
+            // if("西藏"){province="西藏"}
+            var proInfo=  pageData["province"][province] ;      /*省份信息*/
+            if($.isEmptyObject(proInfo)){
+                layer.alert("当前省份无数据:<br>"+""+province);return false;
+            }
+            var proIndex=  parseInt(proInfo[0])-1;                /*省份index*/
+            var yearIndex=  pageData['year'].indexOf(year);  /*年份Index*/
+            if(yearIndex==-1) {layer.alert("年份有误，此年无数据:<br> "+year+"年 "+province);return false;}
+            $("#popNum").html(pageData['pop'][proIndex][yearIndex])
+            $("#gdpNum").html(pageData['gdp'][proIndex][yearIndex])
+            $("#energyNum").html(pageData['energy'][proIndex][yearIndex]);
+            return true;
+        }
     });
+
+
 
 </script>
 </body>
