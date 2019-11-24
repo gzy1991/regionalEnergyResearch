@@ -102,15 +102,16 @@
         <div class="layui-col-sm12">
             <div class="layui-card">
                 <div class="layui-card-header">
-                    访问量
-                    <div class="layui-btn-group layuiadmin-btn-group">
+                    统计数据
+                    <!--<div class="layui-btn-group layuiadmin-btn-group">
                         <a href="javascript:;" class="layui-btn layui-btn-primary layui-btn-xs">去年</a>
                         <a href="javascript:;" class="layui-btn layui-btn-primary layui-btn-xs">今年</a>
-                    </div>
+                    </div>-->
                 </div>
                 <div class="layui-card-body">
                     <div class="layui-row">
                         <div class="layui-col-sm8">
+                            <p class="layuiadmin-normal-font">GDP总量变化图</p>
                             <div class="layui-carousel layadmin-carousel layadmin-dataview" data-anim="fade"
                                  lay-filter="LAY-index-pagetwo">
                                 <div carousel-item id="LAY-index-pagetwo">
@@ -120,7 +121,7 @@
                         </div>
                         <div class="layui-col-sm4">
                             <div class="layuiadmin-card-list">
-                                <p class="layuiadmin-normal-font">月访问数</p>
+                                <p class="layuiadmin-normal-font">分行业能源消费比例</p>
                                 <span>同上期增长</span>
                                 <div class="layui-progress layui-progress-big" lay-showPercent="yes">
                                     <div class="layui-progress-bar" lay-percent="30%"></div>
@@ -376,8 +377,9 @@
             showBottom: false,
             // theme: '#18accc',
             change: function(value, date, endDate){
-                curYear=value;
-                if(initData(curProvince,curYear)){
+
+                if(initData(curProvince,value)){
+                    curYear=value;
                     $("#date-picker").val(curYear);
                 }
             }
