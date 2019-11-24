@@ -4,7 +4,7 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>layuiAdmin std - 通用后台管理模板系统（iframe标准版）</title>
+  <title>区域能源研究</title>
   <meta name="renderer" content="webkit">
   <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=0">
@@ -90,12 +90,32 @@
       <!-- 侧边菜单 -->
       <div class="layui-side layui-side-menu">
         <div class="layui-side-scroll">
-          <div class="layui-logo" lay-href="/static/home/console.html">
-            <span>layuiAdmin</span>
+          <div class="layui-logo" lay-href="index/baseData.html" style="padding: 0;">
+            <span>中国能源消费及区域联动模型</span>
           </div>
           
           <ul class="layui-nav layui-nav-tree" lay-shrink="all" id="LAY-system-side-menu" lay-filter="layadmin-system-side-menu">
-            <li data-name="home" class="layui-nav-item layui-nav-itemed">
+
+
+               <li data-name="home" class="layui-nav-item layui-nav-itemed">
+                  <dl class="">
+                    <dd data-name="console" class="layui-this">
+                      <a lay-href="index/baseData.html">基本数据</a>
+                    </dd>
+                    <dd data-name="console">
+                      <a lay-href="home/homepage1.html">行业趋势</a>
+                    </dd>
+                    <dd data-name="console">
+                      <a lay-href="home/homepage2.html">区域联动</a>
+                    </dd>
+                      <dd data-name="console">
+                      <a lay-href="home/homepage2.html">预测模拟</a>
+                    </dd>
+                  </dl>
+               </li>
+
+            {% comment %}<li data-name="home" class="layui-nav-item layui-nav-itemed">{% endcomment %}
+            <li data-name="home" class="layui-nav-item ">
               <a href="javascript:;" lay-tips="主页" lay-direction="2">
                 <i class="layui-icon layui-icon-home"></i>
                 <cite>主页</cite>
