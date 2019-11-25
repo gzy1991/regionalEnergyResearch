@@ -27,7 +27,7 @@ urlpatterns = [
     path('getIndexPage/<path1>/<name>', baseView.getPage3),                     #1层结构
 
     path('getIndexPage/', baseView.getIndexPage),#返回首页
-    path('getIndexDate/', baseView.getIndexDate),#返回首页
+    path('getIndexDate/', baseView.getIndexDate),#返回首页数据
 
 
 ]
