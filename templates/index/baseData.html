@@ -93,7 +93,7 @@
                 </div>
                 <div class="layui-card-body layuiadmin-card-list">
                     <p class="layuiadmin-big-font" id="energyNum">9,999,666</p>
-                    <i class="layui-inline layui-icon layui-icon-flag"></i>
+                    <i class="layui-inline layui-icon layui-icon-fire"></i>
                 </div>
             </div>
         </div>
@@ -107,7 +107,7 @@
                 <div class="layui-card-body">
                     <div class="layui-row">
                         <div class="layui-col-sm8">
-                            <p class="layuiadmin-normal-font" style="font-size:20px">GDP总量变化图</p>
+                            <p class="layuiadmin-normal-font" style="font-size:20px">GDP-POP-能源总量变化图</p>
                             <div  id="LAY-index-pagetwo_" >
                             <div class="layui-carousel layadmin-carousel layadmin-dataview" data-anim="fade"
                                  lay-filter="LAY-index-pagetwo">
@@ -431,60 +431,76 @@
 
 </script>
 <script>
-    /*echarts*/
+    /* 统计数据 - echarts*/
     var initEcharts = function(){
-        /*横轴*/
-        var yearList = pageData.year ;/*年份列表*/
-        /*$.each(yearList,function(n,value){
-
-        })*/
+        var yearNum = pageData.year.length;/*横轴年份长度*/
+        var gdpArray = new Array(),
+            popArray = new Array(),
+            energyaArray = new Array(); /* 定义 数组 */
+        for(var k =0 ; k < yearNum;k++){ /*数组 初始化*/
+            gdpArray.push(0);
+            popArray.push(0);
+            energyaArray.push(0);
+        }
+        /*计算每年，所有省份 GDP pop energy 之和 */
+        for(var i=0;i<31;i++){
+            for(var j=0;j<yearNum;j++){
+                gdpArray[j]+=   pageData.gdp[i][j];
+                popArray[j]+=pageData.pop[i][j]/1000;
+                energyaArray[j]+= pageData.energy[i][j];
+            }
+        }
+        /*保留小数点后两位*/
+        for(var i = 0;i<yearNum;i++){
+            gdpArray[i]=Math.round(gdpArray[i] * 100) / 100;
+            popArray[i]=Math.round(popArray[i] * 100) / 100;
+            energyaArray[i]=Math.round(energyaArray[i] * 100) / 100;
+        }
         var option = {
-        tooltip: {
-            trigger: 'axis'
-        },
-        legend: {data: ['GDP', 'POP', '能源']},
-        calculable: true,
-        xAxis: [
-            {
-                type: 'category',
-                boundaryGap: false,
-                data: pageData.year
-            }
-        ],
-        yAxis: [
-            {
-                type: 'value'
-            }
-        ],
-        series: [
-            {
-                name: 'GDP',
-                type: 'line',
-                stack: '总量',
-                data: [120, 132, 101, 134, 90, 230, 210]
+            tooltip: {
+                trigger: 'axis'
             },
-            {
-                name: 'POP',
-                type: 'line',
-                stack: '总量',
-                data: [220, 182, 191, 234, 290, 330, 310]
-            },
-            {
-                name: '能源',
-                type: 'line',
-                stack: '总量',
-                data: [150, 232, 201, 154, 190, 330, 410]
-            }
-        ]
-    };
-    $('#LAY-index-pagetwo_').width($('#LAY-index-pagetwo_').width());
-    $('#LAY-index-pagetwo_').height($('#LAY-index-pagetwo_').height());
-    var elemDataView = document.getElementById("LAY-index-pagetwo_");
-    var myChart1 = echarts.init(elemDataView);
-    ;
-    myChart1.setOption(option, true);
-    myChart1.resize();
-    window.onresize = myChart1.resize;
+            legend: {data: ['GDP(万亿人民币)', '人口(千万)', '能源(PJ)']},
+            calculable: true,
+            xAxis: [
+                {
+                    type: 'category',
+                    boundaryGap: false,
+                    data: pageData.year  /*年份列表*/
+                }
+            ],
+            yAxis: [
+                {
+                    type: 'value'
+                }
+            ],
+            series: [
+                {
+                    name: 'GDP(万亿人民币)',
+                    type: 'line',
+                    data: gdpArray
+                },
+                {
+                    name: '人口(千万)',
+                    type: 'line',
+                    data: popArray
+                },
+                {
+                    name: '能源(PJ)',
+                    type: 'line',
+                    data: energyaArray
+                }
+            ]
+        };
+        /*设置一下宽度和长度，不设置的话，会出bug*/
+        $('#LAY-index-pagetwo_').width($('#LAY-index-pagetwo_').width());
+        $('#LAY-index-pagetwo_').height($('#LAY-index-pagetwo_').height());
+        var elemDataView = document.getElementById("LAY-index-pagetwo_");
+        var myChart1 = echarts.init(elemDataView);
+        ;
+        myChart1.setOption(option, true);
+        myChart1.resize();
+        window.onresize = myChart1.resize;
     }
 
 </script>
