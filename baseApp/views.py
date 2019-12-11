@@ -84,8 +84,15 @@ def getIndexDate(request):
                 resultList["energy"] = sheetDataenergyList
 
                 print("end 1.xlsx")
-            elif(fileName=="2"):
-                print("2.xlsx")
+            elif(fileName=="2_r"):      #处理2_r.xlsx
+                #读取List
+                yearList = []           # 年份
+                excelData = xlrd.open_workbook(file, "rb")  # excel的全部数据
+                sheetNameList = excelData.sheet_names()  # 获取此文件的全部sheet名
+                # 读取 List， 获得年份
+                sheetData = ExcelTool.getNpArrayFromSheet(excelData, "year", "List", 0, 6)  #
+
+                print("2_r.xlsx")
         except BaseException:
             print("Error: 文件有问题: " + file)
             import traceback
