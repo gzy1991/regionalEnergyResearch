@@ -340,6 +340,12 @@
 <script src="/static/layuiadmin/layui/layui.js"></script>
 <script src="/static/modules/jQuery/jquery.min.js"></script>
 <script>
+    /*页面全局变量*/
+    var curYear= '2018';  //当前年份
+    var curProvince= '北京市';//当前月份
+    var pageData ; //页面echarts数据
+    var echartsData_1 ; //echarts 1数据
+    var echartsData_2 ; //charts 2数据
     layui.config({
         base: '/static/layuiadmin/' //静态资源所在路径
     }).extend({
@@ -353,10 +359,6 @@
             , layer = layui.layer
             , layarea = layui.layarea
             , form = layui.form;
-        var curYear= '2018';  //当前年份
-        var curProvince= '北京市';//当前月份
-
-
 
         /* 省份选择组件初始化 */
         layarea.render({
@@ -376,7 +378,6 @@
             showBottom: false,
             // theme: '#18accc',
             change: function(value, date, endDate){
-
                 if(initData(curProvince,value)){
                     curYear=value;
                     $("#date-picker").val(curYear);
@@ -398,7 +399,10 @@
             async:false,
             success:function(data){
                 pageData= $.parseJSON(data);
+                echartsData_1 = pageData["echart1"];
+                echartsData_2 = pageData["echart2"];
                 initEcharts();  /*初始化echarts折线图*/
+
             }
         })
 
@@ -412,16 +416,16 @@
                 return false;
             }
             // if("西藏"){province="西藏"}
-            var proInfo=  pageData["province"][province] ;      /*省份信息*/
+            var proInfo=  echartsData_1["province"][province] ;      /*省份信息*/
             if($.isEmptyObject(proInfo)){
                 layer.alert("当前省份无数据:<br>"+""+province);return false;
             }
             var proIndex=  parseInt(proInfo[0])-1;                /*省份index*/
-            var yearIndex=  pageData['year'].indexOf(year);  /*年份Index*/
+            var yearIndex=  echartsData_1['year'].indexOf(year);  /*年份Index*/
             if(yearIndex==-1) {layer.alert("年份有误，此年无数据:<br> "+year+"年 "+province);return false;}
-            $("#popNum").html(pageData['pop'][proIndex][yearIndex])
-            $("#gdpNum").html(pageData['gdp'][proIndex][yearIndex])
-            $("#energyNum").html(pageData['energy'][proIndex][yearIndex]);
+            $("#popNum").html(echartsData_1['pop'][proIndex][yearIndex])
+            $("#gdpNum").html(echartsData_1['gdp'][proIndex][yearIndex])
+            $("#energyNum").html(echartsData_1['energy'][proIndex][yearIndex]);
             return true;
         }
         initData(curProvince,curYear);//初始化数据
@@ -433,7 +437,7 @@
 <script>
     /* 统计数据 - echarts*/
     var initEcharts = function(){
-        var yearNum = pageData.year.length;/*横轴年份长度*/
+        var yearNum = echartsData_1.year.length;/*横轴年份长度*/
         var gdpArray = new Array(),
             popArray = new Array(),
             energyaArray = new Array(); /* 定义 数组 */
@@ -445,9 +449,9 @@
         /*计算每年，所有省份 GDP pop energy 之和 */
         for(var i=0;i<31;i++){
             for(var j=0;j<yearNum;j++){
-                gdpArray[j]+=   pageData.gdp[i][j];
-                popArray[j]+=pageData.pop[i][j]/1000;
-                energyaArray[j]+= pageData.energy[i][j];
+                gdpArray[j]+=   echartsData_1.gdp[i][j];
+                popArray[j]+=echartsData_1.pop[i][j]/1000;
+                energyaArray[j]+= echartsData_1.energy[i][j];
             }
         }
         /*保留小数点后两位*/
@@ -466,7 +470,7 @@
                 {
                     type: 'category',
                     boundaryGap: false,
-                    data: pageData.year  /*年份列表*/
+                    data: echartsData_1.year  /*年份列表*/
                 }
             ],
             yAxis: [
