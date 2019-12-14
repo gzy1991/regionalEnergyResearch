@@ -402,7 +402,7 @@
                 echartsData_1 = pageData["echart1"];
                 echartsData_2 = pageData["echart2"];
                 initEcharts();  /*初始化echarts折线图*/
-
+                initEcharts2(); /*初始化echarts饼图*/
             }
         })
 
@@ -435,7 +435,106 @@
 
 </script>
 <script>
-    /* 统计数据 - echarts*/
+    /* 初始化echarts2 饼图*/
+    var initEcharts2 = function(){
+        var  typeList = echartsData_2.typeList;     //小类型列表
+        var  yearList = echartsData_2.yearList;     //年份列表
+        var yearDataList = echartsData_2.yearDataList/*每个省分每年的数据*/
+        var provinceList = echartsData_2.province/*省份信息*/
+        var provinceIndex =  parseInt(parseFloat(provinceList[curProvince]))/*所选择的省份的下标索引*/
+        var provinceData = [];
+        var curYearData=[] ;/*选中年份的数据*/
+        var pieDataList = [];/*echarts中饼图数据 扇区数值列表*/
+        var pieNameList = [];/*echarts中饼图数据 扇区名称列表*/
+        if(yearList.indexOf(parseInt(curYear))==-1 ){         //如果年份不存在
+
+
+        }else{          //如果年份存在
+            curYearData= yearDataList[curYear];
+            var type = typeList[0];
+            var sum = 0;
+            for(var i = 0;i< typeList.length ; i++){
+                if(  type == typeList[i] ){
+                    sum +=curYearData[i][provinceIndex];
+                }else{
+                    pieNameList.push(pieNameList.length+1 );  //名字
+                    pieDataList.push({
+                        value:sum,                  /*饼图中山区的值*/
+                        name :pieNameList.length+1      /*饼图中山区的名字*/
+                    })
+                    type= typeList[i];
+                    sum=0;
+                }
+            }
+            var option = {
+                title: {
+                    text: echartsData_2.title,
+                    subtext: echartsData_2.unit,
+                    x: 'center'
+                },
+                tooltip: {
+                    trigger: 'item',
+                    formatter: "{a} <br/>{b} : {c} ({d}%)"
+                },
+                legend: {
+                    x: 'center',
+                    y: 'bottom',
+                    data:pieNameList
+                },
+                toolbox: {
+                    show: true,
+                    feature: {
+                        mark: {show: true},
+                        dataView: {show: true, readOnly: false},
+                        magicType: {
+                            show: true,
+                            type: ['pie', 'funnel']
+                        },
+                        restore: {show: true},
+                        saveAsImage: {show: true}
+                    }
+                },
+                calculable: true,
+                series: [
+                    {
+                        name: '半径模式',
+                        type: 'pie',
+                        radius: [20, 110],
+                        center: ['50%', '50%'],
+                        roseType: 'area',//area radius
+                        label: {
+                            normal: {
+                                show: false
+                            },
+                            emphasis: {
+                                show: true
+                            }
+                        },
+                        lableLine: {
+                            normal: {
+                                show: false
+                            },
+                            emphasis: {
+                                show: true
+                            }
+                        },
+                        data: pieDataList
+                    }
+                ]
+            };
+            /*设置一下宽度和长度，不设置的话，会出bug*/
+            $('#LAY-index-pagetwo_').width($('#LAY-index-pagetwo_').width());
+            $('#LAY-index-pagetwo_').height($('#LAY-index-pagetwo_').height());
+            var elemDataView = document.getElementById("LAY-index-pagetwo_");
+            var myChart1 = echarts.init(elemDataView);
+            myChart1.setOption(option, true);
+            myChart1.resize();
+            window.onresize = myChart1.resize;
+
+        }
+
+    }
+    /* 初始化echarts1 折线图 统计数据 - echarts*/
     var initEcharts = function(){
         var yearNum = echartsData_1.year.length;/*横轴年份长度*/
         var gdpArray = new Array(),
@@ -497,14 +596,14 @@
             ]
         };
         /*设置一下宽度和长度，不设置的话，会出bug*/
-        $('#LAY-index-pagetwo_').width($('#LAY-index-pagetwo_').width());
+        /*$('#LAY-index-pagetwo_').width($('#LAY-index-pagetwo_').width());
         $('#LAY-index-pagetwo_').height($('#LAY-index-pagetwo_').height());
         var elemDataView = document.getElementById("LAY-index-pagetwo_");
         var myChart1 = echarts.init(elemDataView);
         ;
         myChart1.setOption(option, true);
         myChart1.resize();
-        window.onresize = myChart1.resize;
+        window.onresize = myChart1.resize;*/
     }
 
 </script>
