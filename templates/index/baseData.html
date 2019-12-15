@@ -102,7 +102,7 @@
         <div class="layui-col-sm6">
             <div class="layui-card">
                 <div class="layui-card-header">
-                    统计数据：GDP-POP-能源总量变化图
+                    GDP-POP-能源总量变化图
                 </div>
                 <div class="layui-card-body">
                     <div id="echarts1" style="height:352px"></div>
@@ -475,12 +475,6 @@
                     show: true,
                     feature: {
                         mark: {show: true},
-                        dataView: {show: true, readOnly: false},
-                        magicType: {
-                            show: true,
-                            type: ['pie', 'funnel']
-                        },
-                        restore: {show: true},
                         saveAsImage: {show: true}
                     }
                 },
@@ -551,9 +545,16 @@
                 trigger: 'axis'
             },
             legend: {data: ['GDP(万亿人民币)', '人口(千万)', '能源(PJ)']},
+            toolbox: {
+                    show: true,
+                    feature: {
+                        saveAsImage: {show: true}
+                    }
+                },
             calculable: true,
             xAxis: [
                 {
+                    name:"年",
                     type: 'category',
                     boundaryGap: false,
                     data: echartsData_1.year  /*年份列表*/
