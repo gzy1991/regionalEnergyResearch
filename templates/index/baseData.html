@@ -99,46 +99,23 @@
         </div>
 
 
-        <div class="layui-col-sm12">
+        <div class="layui-col-sm6">
             <div class="layui-card">
                 <div class="layui-card-header">
-                    统计数据
+                    统计数据：GDP-POP-能源总量变化图
                 </div>
                 <div class="layui-card-body">
-                    <div class="layui-row">
-                        <div class="layui-col-sm6">
-                            <p class="layuiadmin-normal-font" style="font-size:20px">GDP-POP-能源总量变化图</p>
-                            <div  id="LAY-index-pagetwo_" >
-                            <div class="layui-carousel layadmin-carousel layadmin-dataview" data-anim="fade"
-                                 lay-filter="LAY-index-pagetwo">
-                                <!--<div  id="LAY-index-pagetwo_" >-->
-                                </div>
-                            </div>
-                        </div>
-                        <div class="layui-col-sm6">
-                            <div class="layuiadmin-card-list">
-                                <p class="layuiadmin-normal-font">各行业能源消费比例</p>
-                                <span>同上期增长</span>
-                                <div class="layui-progress layui-progress-big" lay-showPercent="yes">
-                                    <div class="layui-progress-bar" lay-percent="30%"></div>
-                                </div>
-                            </div>
-                            <div class="layuiadmin-card-list">
-                                <p class="layuiadmin-normal-font">月下载数</p>
-                                <span>同上期增长</span>
-                                <div class="layui-progress layui-progress-big" lay-showPercent="yes">
-                                    <div class="layui-progress-bar" lay-percent="20%"></div>
-                                </div>
-                            </div>
-                            <div class="layuiadmin-card-list">
-                                <p class="layuiadmin-normal-font">月收入</p>
-                                <span>同上期增长</span>
-                                <div class="layui-progress layui-progress-big" lay-showPercent="yes">
-                                    <div class="layui-progress-bar" lay-percent="25%"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    <div id="echarts1" style="height:352px"></div>
+                </div>
+            </div>
+        </div>
+        <div class="layui-col-sm6">
+            <div class="layui-card">
+                <div class="layui-card-header">
+                    各行业能源消费比例
+                </div>
+                <div class="layui-card-body">
+                    <div id="echarts_pie" style="height:352px"></div>
                 </div>
             </div>
         </div>
@@ -346,6 +323,8 @@
     var pageData ; //页面echarts数据
     var echartsData_1 ; //echarts 1数据
     var echartsData_2 ; //charts 2数据
+    var myChart1; /*echarts 1对象*/
+    var myChart2;/*echarts 2对象*/
     layui.config({
         base: '/static/layuiadmin/' //静态资源所在路径
     }).extend({
@@ -377,7 +356,7 @@
             position: "fixed",
             showBottom: false,
             // theme: '#18accc',
-            change: function(value, date, endDate){
+            change: function(value, date, endDate){ /*当日期变化时*/
                 if(initData(curProvince,value)){
                     curYear=value;
                     $("#date-picker").val(curYear);
@@ -387,7 +366,8 @@
 
         /* 监听查询按钮 */
         form.on('submit(component-form-demo1)', function (data) {
-            initData(curProvince,curYear)
+            initData(curProvince,curYear);
+            initEcharts2(curYear,curProvince);
             return false;
         });
 
@@ -402,7 +382,7 @@
                 echartsData_1 = pageData["echart1"];
                 echartsData_2 = pageData["echart2"];
                 initEcharts();  /*初始化echarts折线图*/
-                initEcharts2(); /*初始化echarts饼图*/
+                initEcharts2(curYear,curProvince); /*初始化echarts饼图*/
             }
         })
 
@@ -415,17 +395,21 @@
                 layer.alert("查询条件有误"+province+" "+year+"年");
                 return false;
             }
-            // if("西藏"){province="西藏"}
             var proInfo=  echartsData_1["province"][province] ;      /*省份信息*/
             if($.isEmptyObject(proInfo)){
-                layer.alert("当前省份无数据:<br>"+""+province);return false;
+                layer.alert("当前省份无数据:<br>"+""+province);
+                return false;
             }
             var proIndex=  parseInt(proInfo[0])-1;                /*省份index*/
             var yearIndex=  echartsData_1['year'].indexOf(year);  /*年份Index*/
-            if(yearIndex==-1) {layer.alert("年份有误，此年无数据:<br> "+year+"年 "+province);return false;}
+            if(yearIndex==-1) {
+                layer.alert("年份有误，此年无数据:<br> "+year+"年 "+province);
+                return false;
+            }
             $("#popNum").html(echartsData_1['pop'][proIndex][yearIndex])
             $("#gdpNum").html(echartsData_1['gdp'][proIndex][yearIndex])
             $("#energyNum").html(echartsData_1['energy'][proIndex][yearIndex]);
+            initEcharts2(year,province);//重新初始化饼图
             return true;
         }
         initData(curProvince,curYear);//初始化数据
@@ -436,39 +420,45 @@
 </script>
 <script>
     /* 初始化echarts2 饼图*/
-    var initEcharts2 = function(){
+    /*
+    *  selectYear       年份
+    *  selectProvince   省份
+    * */
+    var initEcharts2 = function(selectYear,selectProvince){
         var  typeList = echartsData_2.typeList;     //小类型列表
         var  yearList = echartsData_2.yearList;     //年份列表
         var yearDataList = echartsData_2.yearDataList/*每个省分每年的数据*/
         var provinceList = echartsData_2.province/*省份信息*/
-        var provinceIndex =  parseInt(parseFloat(provinceList[curProvince]))/*所选择的省份的下标索引*/
-        var provinceData = [];
-        var curYearData=[] ;/*选中年份的数据*/
+        var provinceIndex =  parseInt(parseFloat(provinceList[selectProvince]))/*所选择的省份的下标索引*/
+        var curYearData=[] ;/*此年份的数据*/
         var pieDataList = [];/*echarts中饼图数据 扇区数值列表*/
         var pieNameList = [];/*echarts中饼图数据 扇区名称列表*/
-        if(yearList.indexOf(parseInt(curYear))==-1 ){         //如果年份不存在
-
-
+        if(yearList.indexOf(parseInt(selectYear))==-1 || provinceIndex == -1){
+            //如果年份不存在  或者省份不存在
+            return false;
         }else{          //如果年份存在
-            curYearData= yearDataList[curYear];
-            var type = typeList[0];
-            var sum = 0;
+            curYearData= yearDataList[selectYear];
+            // var type = typeList[0];
+            pieNameList.push(typeList[0] );
+            pieDataList.push({
+                value:0,                                /*饼图中山区的值*/
+                name :typeList[0]                      /*饼图中山区的名字*/
+            })
             for(var i = 0;i< typeList.length ; i++){
-                if(  type == typeList[i] ){
-                    sum +=curYearData[i][provinceIndex];
+                if(  pieNameList[pieNameList.length-1] == typeList[i] ){
+                    pieDataList[pieDataList.length-1].value += curYearData[i][provinceIndex-1];
                 }else{
-                    pieNameList.push(pieNameList.length+1 );  //名字
-                    pieDataList.push({
-                        value:sum,                  /*饼图中山区的值*/
-                        name :pieNameList.length+1      /*饼图中山区的名字*/
+                     pieNameList.push(typeList[i] );
+                     pieDataList.push({
+                        value:curYearData[i][provinceIndex-1],    /*饼图中山区的值*/
+                        name :typeList[i]                      /*饼图中山区的名字*/
                     })
-                    type= typeList[i];
-                    sum=0;
                 }
             }
+            /*把最后一个数据加进去*/
             var option = {
                 title: {
-                    text: echartsData_2.title,
+                    text: selectProvince +" - " +selectYear+"年-"+ echartsData_2.title,
                     subtext: echartsData_2.unit,
                     x: 'center'
                 },
@@ -504,7 +494,7 @@
                         roseType: 'area',//area radius
                         label: {
                             normal: {
-                                show: false
+                                show: true
                             },
                             emphasis: {
                                 show: true
@@ -512,7 +502,7 @@
                         },
                         lableLine: {
                             normal: {
-                                show: false
+                                show: true
                             },
                             emphasis: {
                                 show: true
@@ -523,16 +513,13 @@
                 ]
             };
             /*设置一下宽度和长度，不设置的话，会出bug*/
-            $('#LAY-index-pagetwo_').width($('#LAY-index-pagetwo_').width());
-            $('#LAY-index-pagetwo_').height($('#LAY-index-pagetwo_').height());
-            var elemDataView = document.getElementById("LAY-index-pagetwo_");
-            var myChart1 = echarts.init(elemDataView);
-            myChart1.setOption(option, true);
-            myChart1.resize();
-            window.onresize = myChart1.resize;
-
+            $('#echarts_pie').width($('#echarts_pie').width());
+            $('#echarts_pie').height($('#echarts_pie').height());
+            var elemDataView = document.getElementById("echarts_pie");
+            myChart2= echarts.init(elemDataView);
+            myChart2.setOption(option, true);
+            myChart2.resize();
         }
-
     }
     /* 初始化echarts1 折线图 统计数据 - echarts*/
     var initEcharts = function(){
@@ -596,15 +583,17 @@
             ]
         };
         /*设置一下宽度和长度，不设置的话，会出bug*/
-        /*$('#LAY-index-pagetwo_').width($('#LAY-index-pagetwo_').width());
-        $('#LAY-index-pagetwo_').height($('#LAY-index-pagetwo_').height());
-        var elemDataView = document.getElementById("LAY-index-pagetwo_");
-        var myChart1 = echarts.init(elemDataView);
-        ;
+        $('#echarts1').width($('#echarts1').width());
+        $('#echarts1').height($('#echarts1').height());
+        var elemDataView = document.getElementById("echarts1");
+        myChart1 = echarts.init(elemDataView);;
         myChart1.setOption(option, true);
         myChart1.resize();
-        window.onresize = myChart1.resize;*/
     }
+    window.onresize =function() {
+        myChart1.resize();
+        myChart2.resize();
+    };
 
 </script>
 </body>
