@@ -68,7 +68,7 @@
                     <span class="layui-badge layui-bg-orange layuiadmin-badge">万人</span>
                 </div>
                 <div class="layui-card-body layuiadmin-card-list">
-                    <p class="layuiadmin-big-font" id="popNum">66,666</p>
+                    <p class="layuiadmin-big-font" id="popNum">0</p>
                     <i class="layui-inline layui-icon layui-icon-user"></i>
                 </div>
             </div>
@@ -80,7 +80,7 @@
                     <span class="layui-badge layui-bg-green layuiadmin-badge">万亿人民币</span>
                 </div>
                 <div class="layui-card-body layuiadmin-card-list">
-                    <p class="layuiadmin-big-font" id="gdpNum">999,666</p>
+                    <p class="layuiadmin-big-font" id="gdpNum">0</p>
                     <i class="layui-inline layui-icon layui-icon-dollar"></i>
                 </div>
             </div>
@@ -92,7 +92,7 @@
                     <span class="layui-badge layui-bg-blue layuiadmin-badge">PJ</span>
                 </div>
                 <div class="layui-card-body layuiadmin-card-list">
-                    <p class="layuiadmin-big-font" id="energyNum">9,999,666</p>
+                    <p class="layuiadmin-big-font" id="energyNum">0</p>
                     <i class="layui-inline layui-icon layui-icon-fire"></i>
                 </div>
             </div>
@@ -344,7 +344,8 @@
             elem: '#area-picker',
             change: function (res) {
                 curProvince=res.province;
-                initData(curProvince,curYear)
+                initData(curProvince,curYear);
+                initEcharts2(curYear,curProvince);/*初始化饼图*/
             }
         });
         /* 年份选择  laydate实例 */
@@ -357,16 +358,30 @@
             showBottom: false,
             // theme: '#18accc',
             change: function(value, date, endDate){ /*当日期变化时*/
-                if(initData(curProvince,value)){
-                    curYear=value;
-                    $("#date-picker").val(curYear);
+                var flag1 = pageData.echart1.year.indexOf(value)!=-1;//存在此年的数据
+                var flag2 = pageData.echart2.yearList.indexOf(parseInt(value))!=-1 ; //存在此年的数据
+                if( !flag1 && !flag2){
+                    layer.alert("无此年的数据");
+                    return false;
                 }
+                curYear=value;
+                $("#date-picker").val(curYear);
+                if(flag1){//存在此年的数据
+                    initData(curProvince,value);
+                }else{//不存在此年的数据
+                    $("#popNum").html("0")
+                    $("#gdpNum").html("0")
+                    $("#energyNum").html("0");
+                }
+                initEcharts2(curYear,curProvince);/*初始化饼图*/
             }
         });
 
         /* 监听查询按钮 */
         form.on('submit(component-form-demo1)', function (data) {
-            initData(curProvince,curYear);
+            if(pageData.echart1.year.indexOf(curYear)!=-1){
+                initData(curProvince,curYear);
+            }
             initEcharts2(curYear,curProvince);
             return false;
         });
@@ -402,14 +417,11 @@
             }
             var proIndex=  parseInt(proInfo[0])-1;                /*省份index*/
             var yearIndex=  echartsData_1['year'].indexOf(year);  /*年份Index*/
-            if(yearIndex==-1) {
-                layer.alert("年份有误，此年无数据:<br> "+year+"年 "+province);
-                return false;
+            if(yearIndex>-1){
+                $("#popNum").html(echartsData_1['pop'][proIndex][yearIndex])
+                $("#gdpNum").html(echartsData_1['gdp'][proIndex][yearIndex])
+                $("#energyNum").html(echartsData_1['energy'][proIndex][yearIndex]);
             }
-            $("#popNum").html(echartsData_1['pop'][proIndex][yearIndex])
-            $("#gdpNum").html(echartsData_1['gdp'][proIndex][yearIndex])
-            $("#energyNum").html(echartsData_1['energy'][proIndex][yearIndex]);
-            initEcharts2(year,province);//重新初始化饼图
             return true;
         }
         initData(curProvince,curYear);//初始化数据
@@ -425,8 +437,8 @@
     *  selectProvince   省份
     * */
     var initEcharts2 = function(selectYear,selectProvince){
-        var  typeList = echartsData_2.typeList;     //小类型列表
-        var  yearList = echartsData_2.yearList;     //年份列表
+        var typeList = echartsData_2.typeList;     //小类型列表
+        var yearList = echartsData_2.yearList;     //年份列表
         var yearDataList = echartsData_2.yearDataList/*每个省分每年的数据*/
         var provinceList = echartsData_2.province/*省份信息*/
         var provinceIndex =  parseInt(parseFloat(provinceList[selectProvince]))/*所选择的省份的下标索引*/
@@ -435,7 +447,7 @@
         var pieNameList = [];/*echarts中饼图数据 扇区名称列表*/
         if(yearList.indexOf(parseInt(selectYear))==-1 || provinceIndex == -1){
             //如果年份不存在  或者省份不存在
-            return false;
+            //return false;
         }else{          //如果年份存在
             curYearData= yearDataList[selectYear];
             // var type = typeList[0];
@@ -455,7 +467,8 @@
                     })
                 }
             }
-            /*把最后一个数据加进去*/
+        }
+        /*把最后一个数据加进去*/
             var option = {
                 title: {
                     text: selectProvince +" - " +selectYear+"年-"+ echartsData_2.title,
@@ -513,7 +526,6 @@
             myChart2= echarts.init(elemDataView);
             myChart2.setOption(option, true);
             myChart2.resize();
-        }
     }
     /* 初始化echarts1 折线图 统计数据 - echarts*/
     var initEcharts = function(){
